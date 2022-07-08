@@ -3,9 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:MqttSubscriberApp"
         mc:Ignorable="d"
-        Title="MQTT Service Manager" Height="550" Width="400" Closed="Window_Closed">
+        Title="MQTT Service Manager" Height="600" Width="800" Closed="Window_Closed">
     <Grid>
         <Grid.Resources>
             <Style TargetType="{x:Type Border}">
@@ -17,41 +18,52 @@
         </Grid.Resources>
         <StackPanel Orientation="Vertical">
             <Border>
-                <StackPanel Orientation="Vertical" Margin="3">
+                <StackPanel Orientation="Vertical" Margin="5">
                     <TextBlock Text=" - 옵션 - " Margin="0, 0, 0, 3"></TextBlock>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="1*"></RowDefinition>
                             <RowDefinition Height="1*"></RowDefinition>
                             <RowDefinition Height="1*"></RowDefinition>
-                            <RowDefinition Height="1*"></RowDefinition>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="130"></ColumnDefinition>
+                            <ColumnDefinition Width="160"></ColumnDefinition>
                             <ColumnDefinition Width="70"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="Connection BackLog"></TextBlock>
                         <TextBlock Text="Port" Grid.Row="1"></TextBlock>
+                        <TextBlock Text="Communication Timeout (s)" Grid.Row="2"></TextBlock>
 
                         <TextBox x:Name="ConnectionBackLogTextBox" Grid.Column="1" Text="{Binding ConnectionBacklog}"></TextBox>
                         <TextBox x:Name="PortTextBox" Grid.Column="1" Grid.Row="1" Text="{Binding Port}"></TextBox>
+                        <TextBox x:Name="CommunicationTimeoutTextBox" Grid.Column="1" Grid.Row="2" Text="{Binding CommunicationTimeout}"></TextBox>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <Border Margin="0, 5, 0, 0">
-                <StackPanel Orientation="Horizontal" Margin="3">
-                    <Button x:Name="StartButton" Margin="5" Content="시작" Command="{Binding StartCommand}"></Button>
-                    <Button x:Name="StopButton" Margin="5" Content="중지" Command="{Binding StopCommand}"></Button>
-                </StackPanel>
+            <Border>
+                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="1">
+                        <Button x:Name="StartButton" Margin="5" Content=" 시작 " Command="{Binding StartCommand}"></Button>
+                        <Button x:Name="StopButton" Margin="5" Content=" 중지 " Command="{Binding StopCommand}"></Button>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="1" HorizontalAlignment="Right">
+                        <Button x:Name="ShowClientWindowButton" Margin="5" Content=" Create Client "  Command="{Binding CreateCliendCommand}" ></Button>
+                    </StackPanel>
+                </Grid>
             </Border>
-            
+
             <Border>
                 <ListView x:Name="InfoListView" Height="400">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Time" Width="120">
+                            <GridViewColumn Header="Time" Width="130">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Time}">
