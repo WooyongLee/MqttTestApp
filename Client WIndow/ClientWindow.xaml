@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MqttSubscriberApp"
         mc:Ignorable="d"
-        Title="ClientWindow" Height="400" Width="400" Closed="Window_Closed">
+        Title="ClientWindow" Height="500" Width="400" Closed="Window_Closed">
     <Window.Resources>
         <local:BoolToStrConnectedConverter x:Key="BoolToStrConnectedConverter"></local:BoolToStrConnectedConverter>
+        <local:ConnectionBrushConverter x:Key="ConnectionBrushConverter"></local:ConnectionBrushConverter>
     </Window.Resources>
     
     <Grid>
@@ -17,11 +18,12 @@
                     <TextBlock Text=" - 연결 정보 -"></TextBlock>
                     <StackPanel Orientation="Horizontal" Margin="0, 3, 0, 0">
                         <TextBlock Text="연결 여부 : "></TextBlock>
-                        <TextBlock Text="{Binding IsConnected, Converter={StaticResource BoolToStrConnectedConverter}}"></TextBlock>
+                        <TextBlock Text="{Binding IsConnected, Converter={StaticResource BoolToStrConnectedConverter}}"
+                                   Foreground="{Binding IsConnected, Converter={StaticResource ConnectionBrushConverter}}"></TextBlock>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0, 3, 0, 0">
                         <TextBlock Text="Topic : "></TextBlock>
-                        <TextBlock Text="{Binding Topic}"></TextBlock>
+                        <TextBox Text="{Binding Topic}" Width="150"></TextBox>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -84,13 +86,61 @@
                         <TextBox x:Name="TopicAliasMaximumTextBox" Text="{Binding TopicAliasMaximum}" Grid.Row="6" Grid.Column="1"></TextBox>
                         <!-- 추후 여유있으면 Will Message Option도 사용해보기-->
                     </Grid>
-                    <Button Content="설정 적용" Margin="5" Width="80" Command="{Binding SetCompleteCommand}"></Button>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="설정 적용" Margin="5" Width="80" Command="{Binding SetCompleteCommand}"></Button>
+                        <Button Content="연결 해제" Margin="5" Width="80" Command="{Binding DisconnectCommand}"></Button>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
             <Border>
                 <StackPanel Orientation="Vertical" Margin="3">
                     <TextBlock Text=" - 송신 테스트-"></TextBlock>
+                    <Grid Margin="0, 0, 0, 5">
+                        <Grid.Resources>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                            </Style>
+                            <Style TargetType="{x:Type TextBox}">
+                                <Setter Property="Margin" Value="2"></Setter>
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="1*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"></ColumnDefinition>
+                            <ColumnDefinition Width="1.5*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Retain Flag"></TextBlock>
+                        <TextBlock Text="QOS Level(0~2)" Grid.Row="1"></TextBlock>
+                        <TextBlock Text="Subscription Identifier" Grid.Row="2"></TextBlock>
+                        <TextBlock Text="Message Expiry Interval" Grid.Row="3"></TextBlock>
+
+                        <ToggleButton x:Name="RetainFlagToggleButton" Grid.Column="1" Margin="2"
+                                      IsChecked="{Binding RetainFlag}">
+                            <ToggleButton.Style>
+                                <Style TargetType="{x:Type ToggleButton}">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsChecked" Value="False">
+                                            <Setter Property="Content" Value="False"></Setter>
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter Property="Content" Value="True"></Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>
+                        </ToggleButton>
+                        <TextBox x:Name="QOSLevelTextBox" Text="{Binding QOSLevel}" Grid.Row="1" Grid.Column="1"></TextBox>
+                        <TextBox x:Name="SubscriptionIdentifierTextBox" Text="{Binding SubscriptionIdentifier}" Grid.Row="2" Grid.Column="1"></TextBox>
+                        <TextBox x:Name="MessageExpiryIntervalTextBox" Text="{Binding MessageExpiryInterval}" Grid.Row="3" Grid.Column="1"></TextBox>
+                    </Grid>
+
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="송신 메시지 : " VerticalAlignment="Center"></TextBlock>
                         <TextBox x:Name="SendMessageTextBox" Text="{Binding SendMessage}" Width="250" Margin="3"></TextBox>

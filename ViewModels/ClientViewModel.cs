@@ -5,6 +5,7 @@ using MQTTnet.Client.Connecting;
 using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
+using MQTTnet.Protocol;
 using System;
 using System.Text;
 using System.Threading;
@@ -31,6 +32,11 @@ namespace MqttSubscriberApp
         public uint sessionExpiryInterval;
         public ushort topicAliasMaximum;
 
+        private bool retainFlag;
+        public ushort qOSLevel;
+        public uint subscriptionIdentifier;
+        public uint messageExpiryInterval;
+
         private string sendMessage;
         private string clientLog;
 
@@ -44,6 +50,10 @@ namespace MqttSubscriberApp
         public uint MaximumPacketSize { get { return maximumPacketSize; } set { maximumPacketSize = value; NotifyPropertyChanged("MaximumPacketSize"); } }
         public uint SessionExpiryInterval { get { return sessionExpiryInterval; } set { sessionExpiryInterval = value; NotifyPropertyChanged("SessionExpiryInterval"); } }
         public ushort TopicAliasMaximum { get { return topicAliasMaximum; } set { topicAliasMaximum = value; NotifyPropertyChanged("TopicAliasMaximum"); } }
+        public bool RetainFlag { get { return retainFlag; } set { retainFlag = value; NotifyPropertyChanged("RetainFlag"); } }
+        public ushort QOSLevel { get { return qOSLevel; } set { qOSLevel = value; NotifyPropertyChanged("QOSLevel"); } }
+        public uint SubscriptionIdentifier { get { return subscriptionIdentifier; } set { subscriptionIdentifier = value; NotifyPropertyChanged("SubscriptionIdentifier"); } }
+        public uint MessageExpiryInterval { get { return messageExpiryInterval; } set { messageExpiryInterval = value; NotifyPropertyChanged("MessageExpiryInterval"); } }
 
         public string SendMessage { get { return sendMessage; } set { sendMessage = value; NotifyPropertyChanged("SendMessage"); } }
         public string ClientLog { get { return clientLog; } set { clientLog = value; NotifyPropertyChanged("ClientLog"); } }
@@ -52,6 +62,7 @@ namespace MqttSubscriberApp
         #region Command
         public ICommand SetCompleteCommand { get; set; }
         public ICommand SendMessageCommand { get; set; }
+        public ICommand DisconnectCommand { get; set; }
         #endregion
 
         public ClientViewModel(int clientNum)
@@ -59,21 +70,35 @@ namespace MqttSubscriberApp
             Topic = "TestTopic/" + clientNum;
 
             // Set Default
-            CommunicationTimeout = 0;
+            CommunicationTimeout = 1;
             KeepAlivePeriod = 15;
             KeepAliveSendInterval = 0;
-            MaximumPacketSize = 1000;
+            MaximumPacketSize = 0;
             SessionExpiryInterval = 0;
-            TopicAliasMaximum = 100;
+            TopicAliasMaximum = 0;
+
+            QOSLevel = 2;
+            SubscriptionIdentifier = 0;
+            MessageExpiryInterval = 0;
 
             SetCompleteCommand = new AsyncRelayCommand(SetCompleteAsyncFunc);
-            SendMessageCommand = new RelayCommand(SendMessageAsyncFunc);
+            SendMessageCommand = new RelayCommand(SendMessageFunc);
+            DisconnectCommand = new AsyncRelayCommand(DisconnectAsyncFunc);
         }
 
-        private void SendMessageAsyncFunc()
+        private async Task DisconnectAsyncFunc()
         {
-            mqttClient.BuildMessage(Topic, Encoding.ASCII.GetBytes(SendMessage));
-            mqttClient.SendMessage();
+            await CloseClient();
+        }
+
+        private void SendMessageFunc()
+        {
+            mqttClient.SendMessage(Topic, Encoding.ASCII.GetBytes(SendMessage),
+                new MqttApplicationMessageBuilder()
+                .WithRetainFlag(RetainFlag)
+                .WithQualityOfServiceLevel((MqttQualityOfServiceLevel)QOSLevel)
+                .WithSubscriptionIdentifier(SubscriptionIdentifier)
+                .WithMessageExpiryInterval(MessageExpiryInterval));
         }
 
         private async Task SetCompleteAsyncFunc()
@@ -95,10 +120,10 @@ namespace MqttSubscriberApp
                         .WithCleanSession(CleanSession)
                         .WithCommunicationTimeout(TimeSpan.FromSeconds(CommunicationTimeout))
                         .WithKeepAlivePeriod(TimeSpan.FromSeconds(KeepAlivePeriod))
-                        .WithKeepAliveSendInterval(TimeSpan.FromSeconds(KeepAliveSendInterval));
-                        //.WithMaximumPacketSize(MaximumPacketSize)
-                        //.WithSessionExpiryInterval(SessionExpiryInterval)
-                        //.WithTopicAliasMaximum(TopicAliasMaximum);
+                        .WithKeepAliveSendInterval(TimeSpan.FromSeconds(KeepAliveSendInterval))
+                        .WithMaximumPacketSize(MaximumPacketSize)
+                        .WithSessionExpiryInterval(SessionExpiryInterval)
+                        .WithTopicAliasMaximum(TopicAliasMaximum);
 
             mqttClient.BuildOptions("192.168.42.2", 1883, optionBuilder);
             await mqttClient.Connect(Topic);
@@ -107,13 +132,20 @@ namespace MqttSubscriberApp
         private void OnCheckConnectionMessage(object sender, EventArgs e)
         {
             this.IsConnected = mqttClient.IsConnected();
+            this.ClientLog = "Client Connection State Changed";
         }
 
         public async Task CloseClient()
         {
-            mqttClient.messageHandler -= OnCheckConnectionMessage;
-            mqttClient.receivedMessageHandler -= OnCheckConnectionMessage;
-            await mqttClient.Disconnect();
+            //mqttClient.messageHandler -= OnCheckConnectionMessage;
+            //mqttClient.receivedMessageHandler -= OnCheckConnectionMessage;
+            if (mqttClient != null)
+            {
+                if (mqttClient.IsConnected())
+                {
+                    await mqttClient.Disconnect();
+                }
+            }
         }
     }
 }

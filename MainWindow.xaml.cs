@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Configuration;
-using System.Text;
 using System.Windows;
-using MQTTnet;
-using MQTTnet.Client.Receiving;
-using MQTTnet.Server;
+using System.Windows.Controls;
 
 namespace MqttSubscriberApp
 {

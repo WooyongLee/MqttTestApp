@@ -78,10 +78,9 @@ namespace MqttSubscriberApp
         }
 
         // 메시지 빌더를 통해 MQTT 메시지를 구성한다.
-        public byte[] BuildMessage(string topic, byte[] payload)
+        public byte[] BuildMessage(string topic, byte[] payload, MqttApplicationMessageBuilder optionBuilder)
         {
             // To Do :: Add Transport Message Options
-
             _message = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(payload)
@@ -109,8 +108,13 @@ namespace MqttSubscriberApp
             await mqttClient.DisconnectAsync();
         }
 
-        public async void SendMessage()
+        public async void SendMessage(string topic, byte[] payload, MqttApplicationMessageBuilder optionBuilder)
         {
+            _message = optionBuilder
+                .WithTopic(topic)
+                .WithPayload(payload)
+                .Build();
+
             // Send ~~ Publish
             if (mqttClient.IsConnected)
             {

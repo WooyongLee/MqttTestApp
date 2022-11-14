@@ -7,6 +7,10 @@
         xmlns:local="clr-namespace:MqttSubscriberApp"
         mc:Ignorable="d"
         Title="MQTT Service Manager" Height="600" Width="800" Closed="Window_Closed">
+    <Window.Resources>
+        <local:BoolToInvertedConverter x:Key="BoolToInvertedConverter"></local:BoolToInvertedConverter>
+        <local:EnableToStartConverter x:Key="EnableToStartConverter"></local:EnableToStartConverter>
+    </Window.Resources> 
     <Grid>
         <Grid.Resources>
             <Style TargetType="{x:Type Border}">
@@ -49,12 +53,18 @@
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" Margin="1">
-                        <Button x:Name="StartButton" Margin="5" Content=" 시작 " Command="{Binding StartCommand}"></Button>
-                        <Button x:Name="StopButton" Margin="5" Content=" 중지 " Command="{Binding StopCommand}"></Button>
+                        <Button x:Name="StartButton" Margin="5"
+                                Command="{Binding StartCommand}"
+                                Content="{Binding IsRun, Converter={StaticResource EnableToStartConverter} }"
+                                IsEnabled="{Binding IsRun, Converter={StaticResource BoolToInvertedConverter}}"></Button>
+                        <Button x:Name="StopButton" Margin="5" 
+                                Command="{Binding StopCommand}" 
+                                Content=" 중지 " 
+                                IsEnabled="{Binding IsRun}"></Button>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Margin="1" HorizontalAlignment="Right">
-                        <Button x:Name="ShowClientWindowButton" Margin="5" Content=" Create Client "  Command="{Binding CreateCliendCommand}" ></Button>
+                        <Button x:Name="ShowClientWindowButton" Margin="5" Content=" Create Client " Command="{Binding CreateCliendCommand}" ></Button>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -62,7 +72,7 @@
             <Border>
                 <ListView x:Name="InfoListView" Height="400">
                     <ListView.View>
-                        <GridView>
+                        <GridView  x:Name="InfoGridView">
                             <GridViewColumn Header="Time" Width="130">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
@@ -72,10 +82,29 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Header="Information" Width="auto">
+                            <GridViewColumn Header="Information" >
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Information}">
+
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Client ID" 
+                                            Width="170">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ClientID}">
+
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Topic" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Topic}">
 
                                         </TextBlock>
                                     </DataTemplate>
